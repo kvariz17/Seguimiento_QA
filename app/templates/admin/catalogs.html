@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>📋 Gestión de Catálogos</h2>
+            <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-secondary">
+                ← Volver al Dashboard
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Catálogo de Prioridades -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="card-title mb-0">🎯 Priorizaciones</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('catalogs.add_catalog_item') }}" class="mb-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="value" placeholder="Nueva priorización" required>
+                        <input type="hidden" name="catalog_type" value="priority">
+                        <button type="submit" class="btn btn-warning">➕ Agregar</button>
+                    </div>
+                </form>
+                
+                <div class="list-group">
+                    {% for priority in priorities %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            {{ priority.value }}
+                            {% if not priority.is_active %}
+                            <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </span>
+                        <div class="btn-group">
+                            <a href="{{ url_for('catalogs.toggle_catalog_item', catalog_id=priority.id) }}" 
+                               class="btn btn-sm {% if priority.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}">
+                                {% if priority.is_active %}❌{% else %}✅{% endif %}
+                            </a>
+                            <a href="{{ url_for('catalogs.delete_catalog_item', catalog_id=priority.id) }}" 
+                               class="btn btn-outline-danger btn-sm"
+                               onclick="return confirm('¿Eliminar \"{{ priority.value }}\" del catálogo?')">
+                                🗑️
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Catálogo de Estados -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">📊 Estados de Proyecto</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('catalogs.add_catalog_item') }}" class="mb-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="value" placeholder="Nuevo estado" required>
+                        <input type="hidden" name="catalog_type" value="status">
+                        <button type="submit" class="btn btn-info">➕ Agregar</button>
+                    </div>
+                </form>
+                
+                <div class="list-group">
+                    {% for status in statuses %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            {{ status.value }}
+                            {% if not status.is_active %}
+                            <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </span>
+                        <div class="btn-group">
+                            <a href="{{ url_for('catalogs.toggle_catalog_item', catalog_id=status.id) }}" 
+                               class="btn btn-sm {% if status.is_active %}btn-outline-info{% else %}btn-outline-success{% endif %}">
+                                {% if status.is_active %}❌{% else %}✅{% endif %}
+                            </a>
+                            <a href="{{ url_for('catalogs.delete_catalog_item', catalog_id=status.id) }}" 
+                               class="btn btn-outline-danger btn-sm"
+                               onclick="return confirm('¿Eliminar \"{{ status.value }}\" del catálogo?')">
+                                🗑️
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">ℹ️ Información</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Priorizaciones:</strong> Solo editable por Administradores. Define los niveles de prioridad para los proyectos.</p>
+                <p><strong>Estados de Proyecto:</strong> Editable por Administradores y actualizable por Analistas. Define los posibles estados de un proyecto.</p>
+                <p class="text-muted"><small>Nota: No se pueden eliminar valores que estén en uso por proyectos existentes.</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

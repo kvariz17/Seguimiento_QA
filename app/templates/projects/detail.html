@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>👁️ Detalle del Proyecto</h2>
+    <div>
+        <a href="{{ url_for('projects.projects_list') }}" class="btn btn-outline-secondary">
+            ← Volver a Proyectos
+        </a>
+        {% if current_user.role == 'Analista' %}
+        <a href="{{ url_for('projects.update_progress', project_id=project.id) }}" 
+           class="btn btn-warning">📊 Actualizar Progreso</a>
+        {% endif %}
+        {% if current_user.role in ['Admin', 'Supervisor'] and 
+              (current_user.role == 'Admin' or project.created_by_id == current_user.id) %}
+        <a href="{{ url_for('projects.edit_project', project_id=project.id) }}" 
+           class="btn btn-outline-primary">✏️ Editar</a>
+        {% endif %}
+    </div>
+</div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Información Principal -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">📋 Información General</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Código GSF:</strong> {{ project.gsf_code }}</p>
+                        <p><strong>Código Invgate:</strong> {{ project.invgate_code }}</p>
+                        <p><strong>Nombre:</strong> {{ project.name }}</p>
+                        <p><strong>Prioridad:</strong> 
+                            <span class="badge 
+                                {% if project.priority == 'Crítico' %}bg-danger
+                                {% elif project.priority == 'Alta' %}bg-warning
+                                {% elif project.priority == 'Media' %}bg-info
+                                {% elif project.priority == 'Baja' %}bg-secondary
+                                {% else %}bg-light text-dark{% endif %}">
+                                {{ project.priority or 'No definida' }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Estado:</strong> {{ project.status or 'No definido' }}</p>
+                        <p><strong>Horas Estimadas:</strong> {{ project.estimated_hours or 'No definido' }}</p>
+                        <p><strong>Fecha Inicio:</strong> {{ project.start_date or 'No definida' }}</p>
+                        <p><strong>Fecha Fin:</strong> {{ project.end_date or 'No definida' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progreso y Métricas -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">📊 Progreso y Métricas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h3>{{ project.progress }}%</h3>
+                        <p class="text-muted">Avance General</p>
+                        <div class="progress">
+                            <div class="progress-bar 
+                                {% if project.progress == 100 %}bg-success
+                                {% elif project.progress >= 50 %}bg-primary
+                                {% else %}bg-warning{% endif %}" 
+                                style="width: {{ project.progress }}%">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h3>{{ project.test_cases or 0 }}</h3>
+                        <p class="text-muted">Casos de Prueba</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3>{{ project.executed_cases or 0 }}</h3>
+                        <p class="text-muted">Casos Ejecutados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+		<div class="card mb-4">
+    <div class="card-header bg-warning text-white">
+        <h5 class="card-title mb-0">📝 Observación del Analista</h5>
+    </div>
+    <div class="card-body">
+        {% if project.observation %}
+        <div class="bg-light p-3 rounded">
+            {{ project.observation|replace('\n', '<br>')|safe }}
+        </div>
+        <small class="text-muted mt-2 d-block">
+            Actualizado por analista asignado
+        </small>
+        {% else %}
+        <p class="text-muted">No hay observaciones registradas para este proyecto.</p>
+        {% endif %}
+        
+        {% if current_user.role == 'Analista' %}
+        <div class="mt-3">
+            <a href="{{ url_for('projects.update_progress', project_id=project.id) }}" 
+               class="btn btn-outline-warning btn-sm">
+                ✏️ Agregar/Editar Observación
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+    </div>
+
+    <!-- Información Lateral -->
+    <div class="col-md-4">
+        <!-- Analistas Asignados -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">👥 Analistas Asignados</h5>
+            </div>
+            <div class="card-body">
+                {% if project.analysts %}
+                <div class="list-group">
+                    {% for assignment in project.analysts %}
+                    <div class="list-group-item">
+                        <strong>{{ assignment.analyst.username }}</strong>
+                        <br>
+                        <small class="text-muted">{{ assignment.analyst.email }}</small>
+                        <br>
+                        <small>Asignado: {{ assignment.assigned_at.strftime('%d/%m/%Y') }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No hay analistas asignados</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Información del Creador -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">ℹ️ Información del Proyecto</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Creado por:</strong> {{ project.creator.username }}</p>
+                <p><strong>Fecha creación:</strong> {{ project.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                <p><strong>Última actualización:</strong> {{ project.updated_at.strftime('%d/%m/%Y %H:%M') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Historial de Cambios -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="card-title mb-0">📝 Historial de Cambios</h5>
+            </div>
+            <div class="card-body">
+                {% if logs %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Usuario</th>
+                                <th>Campo</th>
+                                <th>Valor Anterior</th>
+                                <th>Valor Nuevo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td>{{ log.changed_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>{{ log.user.username }}</td>
+                                <td>{{ log.changed_field }}</td>
+                                <td>{{ log.old_value or '-' }}</td>
+                                <td>{{ log.new_value or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No hay registros de cambios</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

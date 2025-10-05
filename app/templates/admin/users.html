@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Gestión de Usuarios</h2>
+            <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-secondary">
+                ← Volver al Dashboard
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Lista de Usuarios</h5>
+    </div>
+    <div class="card-body">
+        {% if users %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Fecha Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>
+                            <strong>{{ user.username }}</strong>
+                            {% if user.id == current_user.id %}
+                            <span class="badge bg-info">Tú</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if user.role == 'Admin' %}bg-danger
+                                {% elif user.role == 'Supervisor' %}bg-warning
+                                {% else %}bg-secondary{% endif %}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if user.is_active %}
+                            <span class="badge bg-success">Activo</span>
+                            {% else %}
+                            <span class="badge bg-warning">Pendiente</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <!-- Editar Usuario -->
+                                <a href="{{ url_for('main.edit_user', user_id=user.id) }}" 
+                                   class="btn btn-outline-primary btn-sm" title="Editar usuario">
+                                    ✏️ Editar
+                                </a>
+                                
+                                <!-- Resetear Contraseña -->
+                                <a href="{{ url_for('main.reset_password', user_id=user.id) }}" 
+                                   class="btn btn-outline-warning btn-sm" title="Resetear contraseña">
+                                    🔑 Reset Clave
+                                </a>
+                                
+                                {% if not user.is_active %}
+                                <!-- Aprobar Usuario (solo para pendientes) -->
+                                <a href="{{ url_for('main.approve_user', user_id=user.id) }}" 
+                                   class="btn btn-success btn-sm" 
+                                   onclick="return confirm('¿Estás seguro de aprobar a {{ user.username }}?')"
+                                   title="Aprobar usuario">
+                                    ✅ Aprobar
+                                </a>
+                                {% endif %}
+                                
+                                <!-- Eliminar Usuario (no propio) -->
+                                {% if user.id != current_user.id %}
+                                <a href="{{ url_for('main.delete_user', user_id=user.id) }}" 
+                                   class="btn btn-outline-danger btn-sm"
+                                   onclick="return confirm('¿Estás seguro de ELIMINAR permanentemente a {{ user.username }}?')"
+                                   title="Eliminar usuario">
+                                    🗑️ Eliminar
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No hay usuarios registrados.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Resumen de Usuarios</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body py-3">
+                                <h5 class="card-title">Total</h5>
+                                <h3 class="card-text">{{ users|length }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white">
+                            <div class="card-body py-3">
+                                <h5 class="card-title">Activos</h5>
+                                <h3 class="card-text">{{ users|selectattr('is_active')|list|length }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body py-3">
+                                <h5 class="card-title">Pendientes</h5>
+                                <h3 class="card-text">{{ users|rejectattr('is_active')|list|length }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-primary">
+                        📊 Volver al Dashboard
+                    </a>
+                    <button class="btn btn-outline-secondary" disabled>
+                        📋 Gestionar Catálogos (Próximamente)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Dashboard - Administrador</h2>
+        <p class="text-muted">Bienvenido, <strong>{{ current_user.username }}</strong></p>
+        <hr>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total Usuarios</h5>
+                <h2 class="card-text">{{ total_users }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Pendientes</h5>
+                <h2 class="card-text">{{ pending_users }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Activos</h5>
+                <h2 class="card-text">{{ active_users }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Total Proyectos</h5>
+                <h2 class="card-text">{{ total_projects }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="card-title mb-0">Usuarios Pendientes de Aprobación</h5>
+            </div>
+            <div class="card-body">
+                {% if users_pending %}
+                <div class="list-group">
+                    {% for user in users_pending %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ user.username }}</strong><br>
+                            <small class="text-muted">{{ user.email }} - {{ user.role }}</small><br>
+                            <small>Registrado: {{ user.created_at.strftime('%d/%m/%Y') }}</small>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{{ url_for('main.approve_user', user_id=user.id) }}" 
+                               class="btn btn-success btn-sm"
+                               onclick="return confirm('¿Estás seguro de aprobar a {{ user.username }}?')">
+                                Aprobar
+                            </a>
+                            <a href="{{ url_for('main.reject_user', user_id=user.id) }}" 
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirm('¿Estás seguro de rechazar a {{ user.username }}?')">
+                                Rechazar
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No hay usuarios pendientes de aprobación.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Acciones Rápidas</h5>
+            </div>
+            <div class="d-grid gap-2">
+    <a href="{{ url_for('main.manage_users') }}" class="btn btn-outline-primary btn-lg">
+        👥 Gestionar Usuarios
+    </a>
+    <a href="{{ url_for('catalogs.manage_catalogs') }}" class="btn btn-outline-warning btn-lg">
+        📋 Gestionar Catálogos
+    </a>
+    <a href="{{ url_for('projects.projects_list') }}" class="btn btn-outline-success btn-lg">
+        📊 Ver Todos los Proyectos
+    </a>
+    <button class="btn btn-outline-secondary btn-lg" disabled>
+        📈 Reportes (Próximamente)
+    </button>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>✏️ Editar Proyecto</h2>
+            <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn btn-outline-secondary">
+                ← Volver al Detalle
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0">📋 Editar Información del Proyecto</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="projectForm">
+                    <div class="row">
+                        <!-- Campos Obligatorios -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="gsf_code" class="form-label fw-bold">Código GSF *</label>
+                                <input type="text" class="form-control" id="gsf_code" name="gsf_code" 
+                                       value="{{ project.gsf_code }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="invgate_code" class="form-label fw-bold">Código Invgate *</label>
+                                <input type="text" class="form-control" id="invgate_code" name="invgate_code" 
+                                       value="{{ project.invgate_code }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label fw-bold">Nombre del Proyecto *</label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ project.name }}" required>
+                    </div>
+
+                    <div class="row">
+                        <!-- Campos Opcionales -->
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="priority" class="form-label fw-bold">Priorización</label>
+                                <select class="form-select" id="priority" name="priority">
+                                    <option value="">Seleccionar prioridad</option>
+                                    {% for priority in priorities %}
+                                    <option value="{{ priority }}" {% if project.priority == priority %}selected{% endif %}>{{ priority }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="estimated_hours" class="form-label fw-bold">Horas Estimadas</label>
+                                <input type="number" class="form-control" id="estimated_hours" name="estimated_hours" 
+                                       value="{{ project.estimated_hours or '' }}" min="0" placeholder="Ej: 40">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="status" class="form-label fw-bold">Estado</label>
+                                <select class="form-select" id="status" name="status">
+                                    {% for status in statuses %}
+                                    <option value="{{ status }}" {% if project.status == status %}selected{% endif %}>{{ status }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="start_date" class="form-label fw-bold">Fecha Inicio</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" 
+                                       value="{{ project.start_date if project.start_date else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="end_date" class="form-label fw-bold">Fecha Fin</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date" 
+                                       value="{{ project.end_date if project.end_date else '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="progress" class="form-label fw-bold">% Avance</label>
+                                <input type="number" class="form-control" id="progress" name="progress" 
+                                       value="{{ project.progress }}" min="0" max="100" placeholder="0-100">
+                                <div class="form-text">Porcentaje de 0 a 100</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="test_cases" class="form-label fw-bold">Casos de Prueba</label>
+                                <input type="number" class="form-control" id="test_cases" name="test_cases" 
+                                       value="{{ project.test_cases or 0 }}" min="0" placeholder="Ej: 50">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="executed_cases" class="form-label fw-bold">Casos Ejecutados</label>
+                                <input type="number" class="form-control" id="executed_cases" name="executed_cases" 
+                                       value="{{ project.executed_cases or 0 }}" min="0" placeholder="Ej: 25">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observación del Analista (solo lectura para supervisores) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Observación del Analista</label>
+                        <div class="bg-light p-3 rounded">
+                            {% if project.observation %}
+                            {{ project.observation|replace('\n', '<br>')|safe }}
+                            {% else %}
+                            <span class="text-muted">No hay observaciones registradas</span>
+                            {% endif %}
+                        </div>
+                        <div class="form-text">Este campo es solo para lectura. Los analistas pueden agregar observaciones al actualizar el progreso.</div>
+                    </div>
+
+                    <!-- Asignación de Analistas -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Analistas Designados</label>
+                        <div class="form-text mb-2">Selecciona uno o más analistas para este proyecto</div>
+                        {% if analysts %}
+                            <div class="row">
+                                {% for analyst in analysts %}
+                                <div class="col-md-4 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="analysts" value="{{ analyst.id }}" 
+                                               id="analyst_{{ analyst.id }}"
+                                               {% if analyst.id in assigned_analysts %}checked{% endif %}>
+                                        <label class="form-check-label" for="analyst_{{ analyst.id }}">
+                                            {{ analyst.username }} ({{ analyst.email }})
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                No hay analistas activos disponibles. 
+                                <a href="{{ url_for('main.manage_users') }}">Gestionar usuarios</a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" 
+                           class="btn btn-outline-secondary me-md-2">❌ Cancelar</a>
+                        <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación de fechas
+document.getElementById('projectForm').addEventListener('submit', function(e) {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    
+    if (startDate && endDate && startDate > endDate) {
+        e.preventDefault();
+        alert('Error: La fecha fin no puede ser menor que la fecha inicio.');
+        return false;
+    }
+    
+    const progress = document.getElementById('progress').value;
+    if (progress < 0 || progress > 100) {
+        e.preventDefault();
+        alert('Error: El porcentaje de avance debe estar entre 0 y 100.');
+        return false;
+    }
+});
+</script>
+{% endblock %}
